@@ -112,3 +112,5 @@ training_data/
 model/
 data.zip
 models.zip
+/tmp/
+/.vscode

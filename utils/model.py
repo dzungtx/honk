@@ -241,10 +241,10 @@ class SpeechDataset(data.Dataset):
         config["input_length"] = 16000
         config["n_mels"] = 40
         config["timeshift_ms"] = 100
-        config["unknown_prob"] = 0.1
-        config["train_pct"] = 80
-        config["dev_pct"] = 10
-        config["test_pct"] = 10
+        config["unknown_prob"] = 0.45
+        config["train_pct"] = 60
+        config["dev_pct"] = 20
+        config["test_pct"] = 20
         config["wanted_words"] = ["command", "random"]
         config["data_folder"] = "/data/speech_dataset"
         config["audio_preprocess_type"] = "MFCCs"
