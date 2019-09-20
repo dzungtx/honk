@@ -37,16 +37,15 @@ class ConfigBuilder(object):
         args = vars(parser.parse_known_args()[0])
         return ChainMap(args, self.default_config)
 
-def evaluate(config, model=None, test_loader=None):
-    if not test_loader:
-        _, _, test_set = mod.SpeechDataset.splits(config)
-        test_loader = data.DataLoader(
-            test_set,
-            batch_size=1,
-            collate_fn=test_set.collate_fn)
-    if not model:
-        model = config["model_class"](config)
-        model.load('model/model.pt')
+def evaluate(config):
+    _, _, test_set = mod.SpeechDataset.splits(config)
+    test_loader = data.DataLoader(
+        test_set,
+        batch_size=1,
+        collate_fn=test_set.collate_fn)
+
+    model = config['model_class'](config)
+    model.load(config['weights'])
     model.eval()
 
     for model_in, labels in test_loader:
@@ -57,7 +56,7 @@ def evaluate(config, model=None, test_loader=None):
     raise Exception('No test data')
 
 def process():
-    global_config = dict(input_file="model/model.pt", cache_size=0, model='res8')
+    global_config = dict(cache_size=0, model='res8')
     builder = ConfigBuilder(
         mod.find_config(global_config['model']),
         mod.SpeechDataset.default_config(),
@@ -70,7 +69,8 @@ def process():
     config['n_labels'] = 3
     config["train_pct"] = 0
     config["dev_pct"] = 0
-    config["test_pct"] = 100
+    config['test_pct'] = 100
+    config['weights'] = 'hi_koov_weights.pt'
     return evaluate(config)
 
 def main():
