@@ -77,6 +77,9 @@ def evaluate(config, model=None, test_loader=None):
             model_in = model_in.cuda()
             labels = labels.cuda()
         scores = model(model_in)
+
+        # print(scores)
+
         labels = Variable(labels, requires_grad=False)
         loss = criterion(scores, labels)
         results.append(print_eval("test", scores, labels, loss) * model_in.size(0))
@@ -88,7 +91,7 @@ def train(config):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    train_set, dev_set, test_set = mod.SpeechDataset.splits(config)
+    train_set, dev_set, _ = mod.SpeechDataset.splits(config)
     model = config["model_class"](config)
     if config["input_file"]:
         model.load(config["input_file"])
@@ -109,14 +112,14 @@ def train(config):
         collate_fn=train_set.collate_fn)
     dev_loader = data.DataLoader(
         dev_set,
-        batch_size=min(len(dev_set), 16),
+        batch_size=min(len(dev_set), 64),
         shuffle=True,
         collate_fn=dev_set.collate_fn)
-    test_loader = data.DataLoader(
-        test_set,
-        batch_size=min(len(test_set), 16),
-        shuffle=True,
-        collate_fn=test_set.collate_fn)
+    # test_loader = data.DataLoader(
+    #     test_set,
+    #     batch_size=min(len(test_set), 64),
+    #     shuffle=True,
+    #     collate_fn=test_set.collate_fn)
     step_no = 0
 
     for epoch_idx in range(config["n_epochs"]):
@@ -159,7 +162,7 @@ def train(config):
                 print("saving best model...")
                 max_acc = avg_acc
                 model.save(config["output_file"])
-    evaluate(config, model, test_loader)
+    # evaluate(config, model, test_loader)
 
 def main():
     output_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "model", "model.pt")
@@ -182,6 +185,10 @@ def main():
     if config["type"] == "train":
         train(config)
     elif config["type"] == "eval":
+        config['noise_prob'] = 0
+        config['train_pct'] = 0
+        config['dev_pct'] = 0
+        config['test_pct'] = 100
         evaluate(config)
 
 if __name__ == "__main__":

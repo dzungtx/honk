@@ -1,84 +1,104 @@
-from collections import ChainMap
-import argparse
+from datetime import datetime as dt
 import os
-import random
-import sys
+from queue import Queue
+import shutil
+import sounddevice as sd
+import soundfile as sf
+import tempfile
+import time
+from utils.detector import Detector
 
-from torch.autograd import Variable
-import numpy as np
-import torch
-import torch.nn as nn
-import torch.utils.data as data
 
-from . import model as mod
-from .manage_audio import AudioPreprocessor
+SAMPLE_RATE = 16000
+SPLIT_AFTER = 1.5
+DEMO_FOLDER = './tmp/hi_koov_demo/hi_koov'
+AUDIO_SAVE_PATH = 'tmp/hi_koov_demo/hi_koov/voice.wav'
 
-class ConfigBuilder(object):
-    def __init__(self, *default_configs):
-        self.default_config = ChainMap(*default_configs)
-
-    def build_argparse(self):
-        parser = argparse.ArgumentParser()
-        for key, value in self.default_config.items():
-            key = "--{}".format(key)
-            if isinstance(value, tuple):
-                parser.add_argument(key, default=list(value), nargs=len(value), type=type(value[0]))
-            elif isinstance(value, list):
-                parser.add_argument(key, default=value, nargs="+", type=type(value[0]))
-            elif isinstance(value, bool) and not value:
-                parser.add_argument(key, action="store_true")
-            else:
-                parser.add_argument(key, default=value, type=type(value))
-        return parser
-
-    def config_from_argparse(self, parser=None):
-        if not parser:
-            parser = self.build_argparse()
-        args = vars(parser.parse_known_args()[0])
-        return ChainMap(args, self.default_config)
-
-def evaluate(config):
-    _, _, test_set = mod.SpeechDataset.splits(config)
-    test_loader = data.DataLoader(
-        test_set,
-        batch_size=1,
-        collate_fn=test_set.collate_fn)
-
-    model = config['model_class'](config)
-    model.load(config['weights'])
-    model.eval()
-
-    for model_in, labels in test_loader:
-        model_in = Variable(model_in, requires_grad=False)
-        scores = model(model_in)
-        return torch.max(scores, 1)[1].view(1).data.numpy()[0]
-
-    raise Exception('No test data')
-
-def process():
-    global_config = dict(cache_size=0, model='res8')
-    builder = ConfigBuilder(
-        mod.find_config(global_config['model']),
-        mod.SpeechDataset.default_config(),
-        global_config)
-    parser = builder.build_argparse()
-    config = builder.config_from_argparse(parser)
-    config['model_class'] = mod.find_model(global_config['model'])
-    config['data_folder'] = 'tmp/hi_koov_test'
-    config['wanted_words'] = ['hi_koov']
-    config['n_labels'] = 3
-    config["train_pct"] = 0
-    config["dev_pct"] = 0
-    config['test_pct'] = 100
-    config['weights'] = 'hi_koov_weights.pt'
-    return evaluate(config)
 
 def main():
-    result = process()
-    if result == 2:
-        print('Hi KOOV!')
-    else:
-        print('not matched')
+    for fileName in os.listdir(DEMO_FOLDER):
+        os.unlink(os.path.join(DEMO_FOLDER, fileName))
+
+    # for folder in ['tmp/hi_koov_archive/_background_noise_', 'tmp/hi_koov_archive/unknown', 'tmp/hi_koov_archive/hi_koov', 'tmp/hi_koov_demo/hi_koov', 'tmp/hi_koov_demo/unknown', 'tmp/hi_koov_demo/_background_noise_']:
+    #   for the_file in os.listdir(folder):
+    #       file_path = os.path.join(folder, the_file)
+    #       try:
+    #           if os.path.isfile(file_path):
+    #               os.unlink(file_path)
+    #           #elif os.path.isdir(file_path): shutil.rmtree(file_path)
+    #       except Exception as e:
+    #           print(e)
+
+    d = Detector()
+
+    # i = 1
+
+    while 0:
+        # filePath = os.path.join('tmp/hi_koov_demo/hi_koov/', 'voice-{}.wav'.format(i))
+        record_test_voice(AUDIO_SAVE_PATH)
+
+        t1 = time.time()
+
+        result = d.evaluate()
+
+        t2 = time.time()
+
+        print('=======================================================')
+
+        if result == 2:
+            print('Hi KOOV!\t- Inference time: {}s'.format(round(t2 - t1, 2)))
+        else:
+            print('Unknown\t- Inference time: {}s'.format(round(t2 - t1, 2)))
+
+        # if result == 2:
+        #     print('Hi KOOV!')
+        #     shutil.move(filePath, os.path.join('tmp/hi_koov_archive/hi_koov'))
+        # elif result == 1:
+        #     print('Unknown')
+        #     shutil.move(filePath, os.path.join('tmp/hi_koov_archive/unknown'))
+        # else:
+        #     print('Background')
+        #     shutil.move(filePath, os.path.join(
+        #         'tmp/hi_koov_archive/_background_noise_'))
+
+        print('=======================================================')
+
+        # i += 1
+
+        time.sleep(2)
+
+
+def record_test_voice(filePath):
+    if os.path.exists(filePath):
+        os.remove(filePath)
+
+    queue = Queue()
+
+    def callback(indata, frames, time, status):
+        """This is called (from a separate thread) for each audio block."""
+        # if status:
+        #     print(status, flush=True)
+        queue.put(indata.copy())
+
+    with sd.InputStream(samplerate=SAMPLE_RATE, channels=1, callback=callback):
+        counter = 0
+        startTime = time.time()
+        now = dt.now()
+
+        context = {'counter': counter, 'year': now.year, 'month': now.month,
+                   'day': now.day, 'hour': now.hour, 'minute': now.minute, 'second': now.second}
+        filePath = filePath.format(**context)
+
+        with sf.SoundFile(filePath, mode='x', samplerate=SAMPLE_RATE, channels=1) as file:
+            print("Start recording ...")
+            while True:
+                if time.time() - startTime > SPLIT_AFTER:
+                    startTime += SPLIT_AFTER
+                    counter += 1
+                    break
+                file.write(queue.get())
+            print("Stop recording")
+
 
 if __name__ == "__main__":
     main()
