@@ -109,9 +109,10 @@ keyword_spotting_data_generator/evaluation/audio_data
 
 .DS_STORE
 training_data/
-model/
 data.zip
 models.zip
 /tmp/
 /.vscode
-!hi_koov_model.pt
+
+model/*
+!model/model-res8-91%.pt
