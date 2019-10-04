@@ -49,6 +49,7 @@ class ConfigType(Enum):
     RES15_NARROW = "res15-narrow"
     RES8_NARROW = "res8-narrow"
     RES26_NARROW = "res26-narrow"
+    RES8_KOOV = "res8-koov"
 
 
 def find_model(conf):
@@ -450,5 +451,6 @@ _configs = {
     ConfigType.RES15_NARROW.value: dict(n_labels=12, use_dilation=True, n_layers=13, n_feature_maps=19),
     ConfigType.RES8_NARROW.value: dict(n_labels=12, n_layers=6, n_feature_maps=19, res_pool=(4, 3), use_dilation=False),
     ConfigType.RES26_NARROW.value: dict(
-        n_labels=12, n_layers=24, n_feature_maps=19, res_pool=(2, 2), use_dilation=False)
+        n_labels=12, n_layers=24, n_feature_maps=19, res_pool=(2, 2), use_dilation=False),
+    ConfigType.RES8_KOOV.value: dict(n_labels=3, n_layers=6, n_feature_maps=45, res_pool=(4, 3), use_dilation=False),
 }

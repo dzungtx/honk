@@ -47,7 +47,7 @@ class LabelService(object):
                     b_data = f.readframes(16000)
                 label, _ = self.label(b_data)
                 accuracy.append(int(label == dir_labels[folder]))
-        return sum(accuracy) / len(accuracy)                
+        return sum(accuracy) / len(accuracy)
 
     def label(self, wav_data):
         raise NotImplementedError
@@ -188,3 +188,27 @@ class TrainingService(object):
             return False
         threading.Thread(target=self._run_training_script, args=(callback,)).start()
         return True
+
+
+class HiKoovLabelService(LabelService):
+    def __init__(self):
+        self.labels = ["_silence_", "_unknown_", "hi_koov"]
+        self.model_filename = 'model/model-res8-91%.pt'
+        self.audio_processor = AudioPreprocessor()
+        self.reload()
+
+    def reload(self):
+        config = model.find_config(model.ConfigType.RES8_KOOV)
+        self.model = model.SpeechResModel(config)
+        self.model.load(self.model_filename)
+        self.model.eval()
+
+    def label(self, wav_data):
+        wav_data = np.frombuffer(wav_data, dtype=np.int16) / 32768.
+        audio_tensor = torch.from_numpy(
+            np.expand_dims(wav_data, axis=0)).float()
+        model_in = self.audio_processor.compute_pcen(audio_tensor)
+        model_in = torch.autograd.Variable(model_in, requires_grad=False)
+        predictions = F.softmax(self.model(
+            model_in).squeeze(0).cpu()).data.numpy()
+        return (self.labels[np.argmax(predictions)], np.max(predictions))

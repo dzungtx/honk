@@ -5,12 +5,13 @@ import random
 
 IN_FOLDER = '/home/dzung/data/hi_koov_wake_word/positives/'
 OUT_FOLDER = '/home/dzung/data/hi_koov_wake_word/positives_trim/'
+
 PADDING = 200
 
-filePaths = os.listdir(IN_FOLDER)
+fileNames = os.listdir(IN_FOLDER)
 
-for filePath in filePaths:
-    sound = AudioSegment.from_wav(IN_FOLDER + filePath)
+for fileName in fileNames:
+    sound = AudioSegment.from_wav(os.path.join(IN_FOLDER, fileName))
     data = np.array(sound.get_array_of_samples())
 
     length = data.shape[0]
@@ -22,8 +23,8 @@ for filePath in filePaths:
     end = min(length - 1, end + PADDING) * 1000 / sound.frame_rate
 
     trimmedSound = sound[start:end]
-    trimmedSound.export(OUT_FOLDER + filePath, format="wav")
+    trimmedSound.export(os.path.join(OUT_FOLDER, fileName), format="wav")
 
     reducedLength = sound.duration_seconds - trimmedSound.duration_seconds
-    print(("{}: {}%\t").format(filePath, round(reducedLength /
+    print(("{}: {}%\t").format(fileName, round(reducedLength /
                                                sound.duration_seconds * 100, 2)))

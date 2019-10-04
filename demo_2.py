@@ -19,22 +19,24 @@ def main():
     for fileName in os.listdir(DEMO_FOLDER):
         os.unlink(os.path.join(DEMO_FOLDER, fileName))
 
-    # for folder in ['tmp/hi_koov_archive/_background_noise_', 'tmp/hi_koov_archive/unknown', 'tmp/hi_koov_archive/hi_koov', 'tmp/hi_koov_demo/hi_koov', 'tmp/hi_koov_demo/unknown', 'tmp/hi_koov_demo/_background_noise_']:
-    #   for the_file in os.listdir(folder):
-    #       file_path = os.path.join(folder, the_file)
-    #       try:
-    #           if os.path.isfile(file_path):
-    #               os.unlink(file_path)
-    #           #elif os.path.isdir(file_path): shutil.rmtree(file_path)
-    #       except Exception as e:
-    #           print(e)
+    # for folder in ['tmp/hi_koov_archive/_background_noise_', 'tmp/hi_koov_archive/unknown', 'tmp/hi_koov_archive/hi_koov', 'tmp/hi_koov_demo/hi_koov']:
+    #     for the_file in os.listdir(folder):
+    #         file_path = os.path.join(folder, the_file)
+    #         try:
+    #             if os.path.isfile(file_path):
+    #                 os.unlink(file_path)
+    #             # elif os.path.isdir(file_path): shutil.rmtree(file_path)
+    #         except Exception as e:
+    #             print(e)
 
     d = Detector()
 
     # i = 1
 
     while True:
-        # filePath = os.path.join('tmp/hi_koov_demo/hi_koov/', 'voice-{}.wav'.format(i))
+        # filePath = os.path.join(
+        #     'tmp/hi_koov_demo/hi_koov/', 'voice-{}.wav'.format(i))
+        # record_test_voice(filePath)
         record_test_voice(AUDIO_SAVE_PATH)
 
         t1 = time.time()
