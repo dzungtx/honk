@@ -33,7 +33,7 @@ def main():
 
     # i = 1
 
-    while 0:
+    while True:
         # filePath = os.path.join('tmp/hi_koov_demo/hi_koov/', 'voice-{}.wav'.format(i))
         record_test_voice(AUDIO_SAVE_PATH)
 
