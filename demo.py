@@ -12,7 +12,7 @@ SAMPLE_RATE = 16000
 
 class HiKoovDetector(object):
     def __init__(self):
-        self.chunk_size = 12000
+        self.chunk_size = 16000
         self.stride_size = 500
         self.label_service = HiKoovLabelService()
         self.keyword = 'hi_koov'
