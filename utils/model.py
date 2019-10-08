@@ -267,7 +267,7 @@ class SpeechDataset(data.Dataset):
         config["test_pct"] = 0
         config["wanted_words"] = ["command", "random"]
         config["data_folder"] = "/data/speech_dataset"
-        config["audio_preprocess_type"] = "PCEN"
+        config["audio_preprocess_type"] = "MFCCs"
         return config
 
     def collate_fn(self, data):
@@ -276,7 +276,7 @@ class SpeechDataset(data.Dataset):
         for audio_data, label in data:
             if self.audio_preprocess_type == "MFCCs":
                 audio_tensor = torch.from_numpy(
-                    self.audio_processor.compute_mfccs(audio_data).reshape(1, 151, 40))
+                    self.audio_processor.compute_mfccs(audio_data).reshape(1, 101, 40))
                 x = audio_tensor if x is None else torch.cat(
                     (x, audio_tensor), 0)
             elif self.audio_preprocess_type == "PCEN":

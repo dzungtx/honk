@@ -52,7 +52,7 @@ class Detector:
         self.config['train_pct'] = 0
         self.config['dev_pct'] = 0
         self.config['test_pct'] = 100
-        self.config['weights'] = 'model/model-res8-91%.pt'
+        self.config['weights'] = 'model/model-res8-mfcc-91.pt'
 
         self.model = self.config['model_class'](self.config)
         self.model.load(self.config['weights'])
