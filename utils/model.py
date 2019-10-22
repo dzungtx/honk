@@ -319,6 +319,9 @@ class SpeechDataset(data.Dataset):
             data = librosa.core.load(example, sr=16000)[
                 0] if file_data is None else file_data
 
+            if len(data) == 0:
+                raise Exception('Empty audio file: {}'.format(example))
+
             thres = np.amax(np.abs(data)) / 10
             start = np.argmax(data > thres)
             end = len(data) - np.argmax(np.flip(data > thres))

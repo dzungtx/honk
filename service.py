@@ -193,7 +193,7 @@ class TrainingService(object):
 class HiKoovLabelService(LabelService):
     def __init__(self):
         self.labels = ["_silence_", "_unknown_", "hi_koov"]
-        self.model_filename = 'model/model-res8-mfcc-85.pt'
+        self.model_filename = 'model/model.pt'
         self.audio_processor = AudioPreprocessor()
         self.reload()
 
@@ -204,10 +204,9 @@ class HiKoovLabelService(LabelService):
         self.model.eval()
 
     def label(self, wav_data):
-        wav_data = np.frombuffer(wav_data, dtype=np.int16) / 32768.
-        model_in = torch.from_numpy(
-            self.audio_processor.compute_mfccs(wav_data).squeeze(2)).unsqueeze(0)
+        mfccs = self.audio_processor.compute_mfccs(wav_data)
+        model_in = torch.from_numpy(mfccs.squeeze(2)).unsqueeze(0)
         model_in = torch.autograd.Variable(model_in, requires_grad=False)
-        predictions = F.softmax(self.model(
-            model_in).squeeze(0).cpu()).data.numpy()
+        model_out = self.model(model_in).squeeze(0).cpu()
+        predictions = F.softmax(model_out, dim=0).data.numpy()
         return (self.labels[np.argmax(predictions)], np.max(predictions))

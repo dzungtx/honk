@@ -115,4 +115,4 @@ models.zip
 /.vscode
 
 model/*
-!model/model-res8-*
+!model/model*

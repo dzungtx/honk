@@ -8,6 +8,7 @@ from service import HiKoovLabelService, stride
 
 INPUT_LENGTH = 16000
 SAMPLE_RATE = 16000
+AMPLITUDE_THRES = 0.05
 
 
 class HiKoovDetector(object):
@@ -20,6 +21,9 @@ class HiKoovDetector(object):
 
     def process(self, wav_data):
         for data in stride(wav_data, int(2 * INPUT_LENGTH * self.stride_size / 1000), 2 * INPUT_LENGTH):
+            data = np.frombuffer(data, dtype=np.int16) / 32768.
+            if np.amax(data) < AMPLITUDE_THRES:
+                continue
             label, prob = self.label_service.label(data)
             if label == self.keyword:
                 return prob

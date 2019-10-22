@@ -2,8 +2,8 @@ import os
 from pydub import AudioSegment
 import random
 
-IN_FOLDER = '/home/dzung/data/hi_koov_wake_word/negatives/'
-OUT_FOLDER = 'tmp/hi_koov_data/unknown/'
+IN_FOLDER = '/home/dzung/data/hi_koov/negatives/'
+OUT_FOLDER = '/home/dzung/data/hi_koov/negatives_random/'
 
 for subdir in os.listdir(IN_FOLDER):
   subdirPath = os.path.join(IN_FOLDER, subdir)

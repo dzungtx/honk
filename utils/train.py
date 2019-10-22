@@ -170,7 +170,10 @@ def main():
     parser.add_argument("--model", choices=[x.value for x in list(mod.ConfigType)], default="cnn-trad-pool2", type=str)
     config, _ = parser.parse_known_args()
 
-    global_config = dict(no_cuda=False, n_epochs=500, lr=[0.001], schedule=[np.inf], batch_size=64, dev_every=10, seed=random.randint(0, 10000),
+    seed = random.randint(0, 1000000000)
+    print('Random seed: {}'.format(seed))
+
+    global_config = dict(no_cuda=False, n_epochs=500, lr=[0.001], schedule=[np.inf], batch_size=64, dev_every=10, seed=seed,
         use_nesterov=False, input_file="", output_file=output_file, gpu_no=0, cache_size=32768, momentum=0.9, weight_decay=0.00001)
     mod_cls = mod.find_model(config.model)
     builder = ConfigBuilder(

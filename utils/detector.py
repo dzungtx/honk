@@ -4,6 +4,7 @@ import numpy as np
 import torch
 import torch.utils.data as data
 from torch.autograd import Variable
+import torch.nn as nn
 
 from . import model as mod
 
@@ -58,6 +59,10 @@ class Detector:
         self.model.load(self.config['weights'])
         self.model.eval()
 
+        # self.quantized_model = torch.quantization.quantize_dynamic(
+        #     self.model, {nn.Conv2d, nn.AvgPool2d, nn.BatchNorm2d, nn.Linear}, dtype=torch.qint8
+        # )
+
     def evaluate(self):
         _, _, testSet = mod.SpeechDataset.splits(self.config)
         testLoader = data.DataLoader(testSet, batch_size=1, collate_fn=testSet.collate_fn)
@@ -65,6 +70,7 @@ class Detector:
         for x, _ in testLoader:
             x = Variable(x, requires_grad=False)
             scores = self.model(x)
+            # scores = self.quantized_model(x)
             return torch.max(scores, 1)[1].view(1).data.numpy()[0]
 
     def getDataFolder(self):
