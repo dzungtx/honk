@@ -193,7 +193,7 @@ class TrainingService(object):
 class HiKoovLabelService(LabelService):
     def __init__(self):
         self.labels = ["_silence_", "_unknown_", "hi_koov"]
-        self.model_filename = 'model/model.pt'
+        self.model_filename = 'model/model-0355-best.pt'
         self.audio_processor = AudioPreprocessor()
         self.reload()
 
